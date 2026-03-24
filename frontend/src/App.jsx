@@ -66,8 +66,9 @@ function App() {
   function handleLoginSuccess(userData) {
     setIsLoggedIn(true)
     setUser(userData)
-    setCurrentPage('dashboard')
+    setCurrentPage('home')
   }
+
 
   async function handleLogout() {
     await supabase.auth.signOut()
