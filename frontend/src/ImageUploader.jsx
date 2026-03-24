@@ -617,29 +617,7 @@ const downloadImage = async () => {
 
   /* ======= RENDU ======= */
   return (
-    <>
-    {/* BANDEAU SITE EN CONSTRUCTION */}
-<div style={{
-  width: '100%',
-  background: 'linear-gradient(90deg, #DC2626, #EA580C)',
-  color: 'white',
-  textAlign: 'center',
-  padding: '14px 20px',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  boxShadow: '0 4px 20px rgba(220, 38, 38, 0.4)',
-}}>
-  🚧 SITE EN CONSTRUCTION — Les abonnements ne sont pas encore disponibles. Revenez bientôt ! 🚧
-</div>
-
-
-
-      <style>{`
-        @keyframes pulse-banner {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.85; }
-        }
-      `}</style>
+    
 
        
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
@@ -691,6 +669,24 @@ const downloadImage = async () => {
 
   </div>
 </header>
+
+
+{/* BANDEAU SITE EN CONSTRUCTION */}
+<div style={{
+  width: '100%',
+  background: 'linear-gradient(90deg, #DC2626, #EA580C)',
+  color: 'white',
+  textAlign: 'center',
+  padding: '14px 20px',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  boxShadow: '0 4px 20px rgba(220, 38, 38, 0.4)',
+  position: 'sticky',
+  top: '52px',
+  zIndex: 49,
+}}>
+  🚧 SITE EN CONSTRUCTION — Les abonnements ne sont pas encore disponibles. Revenez bientôt ! 🚧
+</div>
 
 
       {/* ========== MODAL LOGIN ========== */}
@@ -1254,7 +1250,7 @@ const downloadImage = async () => {
 
     </div>
      
-    </>       /* fin du fragment */
+    
   )
   
 }
