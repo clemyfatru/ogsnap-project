@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 
+const API_URL = 'https://ogsnap-backend.onrender.com'
+
 function Dashboard({ onLogout }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -10,7 +12,7 @@ function Dashboard({ onLogout }) {
 
   async function fetchUser() {
     const token = localStorage.getItem('token')
-    const res = await fetch('http://localhost:3001/api/me', {
+    const res = await fetch(`${API_URL}/api/me`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     const data = await res.json()
@@ -20,7 +22,7 @@ function Dashboard({ onLogout }) {
 
   async function handleUpgrade() {
     const token = localStorage.getItem('token')
-    const res = await fetch('http://localhost:3001/api/create-checkout-session', {
+    const res = await fetch(`${API_URL}/api/create-checkout-session`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` }
     })

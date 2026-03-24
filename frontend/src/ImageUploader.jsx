@@ -35,7 +35,8 @@ const handleSubscribe = async (plan) => {
     
   }
 
-  const res = await fetch('http://localhost:3001/api/create-checkout-session', {
+  const res = await fetch('https://ogsnap-backend.onrender.com/api/create-checkout-session', {
+
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
