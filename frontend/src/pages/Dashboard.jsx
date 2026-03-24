@@ -52,12 +52,12 @@ function Dashboard({ user, onLogout }) {
   const usagePercent = Math.min((user.images_used / user.images_limit) * 100, 100)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 py-12 px-4">
+    <div className="min-h-screen py-16 px-4" style={{ background: 'linear-gradient(135deg, #fdf6ee 0%, #f5efe6 40%, #eee8df 100%)' }}>
       <div className="max-w-2xl mx-auto">
-        
+
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="text-center mb-10">
+          <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg">
             <span className="text-3xl text-white font-bold">
               {user.email.charAt(0).toUpperCase()}
             </span>
@@ -67,15 +67,14 @@ function Dashboard({ user, onLogout }) {
         </div>
 
         {/* Plan Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+        <div className="bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-white/60 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Mon forfait</h2>
             <span className={`px-3 py-1 rounded-full text-sm font-semibold ${currentPlan.color}`}>
               {currentPlan.icon} {currentPlan.name}
             </span>
           </div>
-          
-          {/* Usage bar */}
+
           <div className="mb-2">
             <div className="flex justify-between text-sm text-gray-600 mb-1">
               <span>Images générées</span>
@@ -100,13 +99,13 @@ function Dashboard({ user, onLogout }) {
 
         {/* Upgrade Card */}
         {(user.plan === 'free' || user.plan === 'starter') && (
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 mb-4 text-white shadow-md">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 mb-6 text-white shadow-md">
             <h3 className="font-bold text-lg mb-1">🚀 Envie de plus ?</h3>
             <p className="text-indigo-100 text-sm mb-4">
               Passez à un forfait supérieur pour débloquer plus de templates et d'images.
             </p>
             <button
-              onClick={() => {/* TODO: upgrade flow */}}
+              onClick={() => {}}
               className="bg-white text-indigo-600 font-semibold px-6 py-2.5 rounded-xl hover:bg-indigo-50 transition shadow-sm"
             >
               Voir les forfaits
@@ -115,9 +114,9 @@ function Dashboard({ user, onLogout }) {
         )}
 
         {/* Actions Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+        <div className="bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-white/60 p-6 mb-6">
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Paramètres</h2>
-          
+
           {!showChangePassword ? (
             <button
               onClick={() => setShowChangePassword(true)}
@@ -132,7 +131,7 @@ function Dashboard({ user, onLogout }) {
           ) : (
             <form onSubmit={handleChangePassword} className="bg-gray-50 rounded-xl p-5">
               <h3 className="font-semibold text-gray-700 mb-3">Nouveau mot de passe</h3>
-              
+
               {pwError && (
                 <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-3">
                   ❌ {pwError}
@@ -181,7 +180,7 @@ function Dashboard({ user, onLogout }) {
         </div>
 
         {/* Logout */}
-        <div className="text-center mt-6">
+        <div className="text-center mt-8">
           <button
             onClick={onLogout}
             className="text-red-400 hover:text-red-600 text-sm font-medium transition"
