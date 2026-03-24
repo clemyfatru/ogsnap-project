@@ -25,6 +25,9 @@ const [signupEmail, setSignupEmail] = useState('')
 const [signupPassword, setSignupPassword] = useState('')
 const [authError, setAuthError] = useState('')
 const [authLoading, setAuthLoading] = useState(false)
+const [showForgotPassword, setShowForgotPassword] = useState(false)
+const [authSuccess, setAuthSuccess] = useState('')
+
 const handleSubscribe = async (plan) => {
   const { data: sessionData } = await supabase.auth.getSession()
   const token = sessionData?.session?.access_token
@@ -689,45 +692,97 @@ const downloadImage = async () => {
 </div>
 
 
-      {/* ========== MODAL LOGIN ========== */}
-      {showLogin && (
+     {/* ========== MODAL LOGIN ========== */}
+{showLogin && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]" onClick={() => setShowLogin(false)}>
     <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-gray-800">Se connecter</h2>
-        <button onClick={() => { setShowLogin(false); setAuthError('') }} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        <button onClick={() => { setShowLogin(false); setAuthError(''); setShowForgotPassword(false) }} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
       </div>
       {authError && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{authError}</div>}
-      <form onSubmit={async (e) => {
-        e.preventDefault()
-        setAuthError('')
-        setAuthLoading(true)
-        const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword })
-        setAuthLoading(false)
-        if (error) { setAuthError(error.message); return }
-        setShowLogin(false)
-        setLoginEmail('')
-        setLoginPassword('')
-      }} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="vous@exemple.com" className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" required />
+      {authSuccess && <div className="bg-green-50 text-green-600 p-3 rounded-lg mb-4 text-sm">{authSuccess}</div>}
+
+      {/* ---- Formulaire mot de passe oublié ---- */}
+      {showForgotPassword ? (
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">Entrez votre email, vous recevrez un lien pour réinitialiser votre mot de passe.</p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              value={loginEmail}
+              onChange={e => setLoginEmail(e.target.value)}
+              placeholder="vous@exemple.com"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+              required
+            />
+          </div>
+          <button
+            onClick={async () => {
+              setAuthError('')
+              setAuthSuccess('')
+              if (!loginEmail) { setAuthError('Veuillez entrer votre email'); return }
+              setAuthLoading(true)
+              const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
+                redirectTo: `${window.location.origin}/reset-password`
+              })
+              setAuthLoading(false)
+              if (error) { setAuthError(error.message); return }
+              setAuthSuccess('📧 Email envoyé ! Vérifiez votre boîte de réception (et vos spams).')
+            }}
+            disabled={authLoading}
+            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition disabled:opacity-50"
+          >
+            {authLoading ? '⏳...' : 'Envoyer le lien de réinitialisation'}
+          </button>
+          <p className="text-center text-sm text-gray-500">
+            <button onClick={() => { setShowForgotPassword(false); setAuthError(''); setAuthSuccess('') }} className="text-indigo-600 font-medium hover:underline">
+              ← Retour à la connexion
+            </button>
+          </p>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-          <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••••" className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" required />
-        </div>
-        <button type="submit" disabled={authLoading} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition disabled:opacity-50">
-          {authLoading ? '⏳...' : 'Se connecter'}
-        </button>
-      </form>
-      <p className="text-center text-sm text-gray-500 mt-4">
-        Pas de compte ?{' '}
-        <button onClick={() => { setShowLogin(false); setShowSignup(true); setAuthError('') }} className="text-indigo-600 font-medium hover:underline">S'inscrire</button>
-      </p>
+      ) : (
+        /* ---- Formulaire connexion normal ---- */
+        <>
+          <form onSubmit={async (e) => {
+            e.preventDefault()
+            setAuthError('')
+            setAuthLoading(true)
+            const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword })
+            setAuthLoading(false)
+            if (error) { setAuthError(error.message); return }
+            setShowLogin(false)
+            setLoginEmail('')
+            setLoginPassword('')
+          }} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="vous@exemple.com" className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+              <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••••" className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" required />
+            </div>
+            <button type="submit" disabled={authLoading} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition disabled:opacity-50">
+              {authLoading ? '⏳...' : 'Se connecter'}
+            </button>
+          </form>
+          <p className="text-center text-sm text-gray-500 mt-3">
+            <button onClick={() => { setShowForgotPassword(true); setAuthError('') }} className="text-indigo-600 font-medium hover:underline">
+              Mot de passe oublié ?
+            </button>
+          </p>
+          <p className="text-center text-sm text-gray-500 mt-2">
+            Pas de compte ?{' '}
+            <button onClick={() => { setShowLogin(false); setShowSignup(true); setAuthError('') }} className="text-indigo-600 font-medium hover:underline">S'inscrire</button>
+          </p>
+        </>
+      )}
     </div>
   </div>
 )}
+
 
 
       {/* ========== MODAL SIGNUP ========== */}

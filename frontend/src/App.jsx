@@ -5,7 +5,7 @@ import Photos from './pages/Photos'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Success from './pages/Success'
-
+import ResetPassword from './pages/ResetPassword'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -14,46 +14,49 @@ function App() {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-  if (window.location.pathname === '/success') {
-    setCurrentPage('success')
-    window.history.replaceState({}, '', '/')
-  }
-
-  async function loadUser(session) {
-    // Récupérer le plan depuis la table users
-    const { data: dbUser } = await supabase
-      .from('users')
-      .select('plan, images_used, images_limit')
-      .eq('email', session.user.email)
-      .single()
-
-    setIsLoggedIn(true)
-    setUser({
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.user_metadata?.name || session.user.email,
-      plan: dbUser?.plan || 'free',
-      images_used: dbUser?.images_used || 0,
-      images_limit: dbUser?.images_limit || 1
-    })
-  }
-
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) loadUser(session)
-  })
-
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-    if (session) {
-      loadUser(session)
-    } else {
-      setIsLoggedIn(false)
-      setUser(null)
+    if (window.location.pathname === '/success') {
+      setCurrentPage('success')
+      window.history.replaceState({}, '', '/')
     }
-  })
 
-  return () => subscription.unsubscribe()
-}, [])
+    if (window.location.pathname === '/reset-password') {
+      setCurrentPage('reset-password')
+      window.history.replaceState({}, '', '/reset-password')
+    }
 
+    async function loadUser(session) {
+      const { data: dbUser } = await supabase
+        .from('users')
+        .select('plan, images_used, images_limit')
+        .eq('email', session.user.email)
+        .single()
+
+      setIsLoggedIn(true)
+      setUser({
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.user_metadata?.name || session.user.email,
+        plan: dbUser?.plan || 'free',
+        images_used: dbUser?.images_used || 0,
+        images_limit: dbUser?.images_limit || 1
+      })
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) loadUser(session)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        loadUser(session)
+      } else {
+        setIsLoggedIn(false)
+        setUser(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   function handleSelectPhoto(photoUrl) {
     setSelectedPhoto(photoUrl)
@@ -75,7 +78,7 @@ function App() {
 
   return (
     <div>
-      {currentPage !== 'home' && (
+      {currentPage !== 'home' && currentPage !== 'reset-password' && (
         <div className="fixed top-3 right-10 z-[999] flex gap-2">
           <button
             onClick={() => setCurrentPage('home')}
@@ -89,7 +92,6 @@ function App() {
       {currentPage === 'home' && (
         <ImageUploader selectedPhoto={selectedPhoto} user={user} isLoggedIn={isLoggedIn} setCurrentPage={setCurrentPage} />
       )}
-
       {currentPage === 'photos' && (
         <Photos onSelectPhoto={handleSelectPhoto} />
       )}
@@ -100,9 +102,9 @@ function App() {
         <Dashboard user={user} onLogout={handleLogout} />
       )}
       {currentPage === 'success' && <Success />}
+      {currentPage === 'reset-password' && <ResetPassword />}
     </div>
   )
-
 }
 
 export default App
