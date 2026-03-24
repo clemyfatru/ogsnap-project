@@ -63,11 +63,10 @@ function App() {
     setCurrentPage('home')
   }
 
-  function handleLoginSuccess(userData) {
-    setIsLoggedIn(true)
-    setUser(userData)
+  function handleLoginSuccess() {
     setCurrentPage('home')
   }
+
 
 
   async function handleLogout() {
