@@ -25,22 +25,39 @@ function App() {
     }
 
     async function loadUser(session) {
-      const { data: dbUser } = await supabase
-        .from('users')
-        .select('plan, images_used, images_limit')
-        .eq('email', session.user.email)
-        .single()
+  let { data: dbUser } = await supabase
+    .from('users')
+    .select('plan, images_used, images_limit')
+    .eq('email', session.user.email)
+    .single()
 
-      setIsLoggedIn(true)
-      setUser({
+  // Si l'utilisateur n'existe pas en base, on le crée
+  if (!dbUser) {
+    const { data: newUser } = await supabase
+      .from('users')
+      .insert({
         id: session.user.id,
         email: session.user.email,
-        name: session.user.user_metadata?.name || session.user.email,
-        plan: dbUser?.plan || 'free',
-        images_used: dbUser?.images_used || 0,
-        images_limit: dbUser?.images_limit || 1
+        plan: 'free',
+        images_used: 0,
+        images_limit: 1
       })
-    }
+      .select('plan, images_used, images_limit')
+      .single()
+    dbUser = newUser
+  }
+
+  setIsLoggedIn(true)
+  setUser({
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.user_metadata?.name || session.user.email,
+    plan: dbUser?.plan || 'free',
+    images_used: dbUser?.images_used || 0,
+    images_limit: dbUser?.images_limit || 1
+  })
+}
+
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) loadUser(session)
