@@ -25,38 +25,62 @@ function App() {
     }
 
     async function loadUser(session) {
-  let { data: dbUser } = await supabase
-    .from('users')
-    .select('plan, images_used, images_limit')
-    .eq('email', session.user.email)
-    .single()
-
-  // Si l'utilisateur n'existe pas en base, on le crée
-  if (!dbUser) {
-    const { data: newUser } = await supabase
+  try {
+    const { data: dbUser, error: selectError } = await supabase
       .from('users')
-      .insert({
-        id: session.user.id,
-        email: session.user.email,
-        plan: 'free',
-        images_used: 0,
-        images_limit: 1
-      })
       .select('plan, images_used, images_limit')
-      .single()
-    dbUser = newUser
-  }
+      .eq('id', session.user.id)  // ← utilise id au lieu de email
+      .maybeSingle()              // ← maybeSingle au lieu de single (évite l'erreur 406)
 
-  setIsLoggedIn(true)
-  setUser({
-    id: session.user.id,
-    email: session.user.email,
-    name: session.user.user_metadata?.name || session.user.email,
-    plan: dbUser?.plan || 'free',
-    images_used: dbUser?.images_used || 0,
-    images_limit: dbUser?.images_limit || 1
-  })
+    if (selectError) {
+      console.error('Erreur select user:', selectError)
+    }
+
+    let finalUser = dbUser
+
+    if (!dbUser) {
+      const { data: newUser, error: insertError } = await supabase
+        .from('users')
+        .upsert({                  // ← upsert au lieu de insert (évite les doublons)
+          id: session.user.id,
+          email: session.user.email,
+          plan: 'free',
+          images_used: 0,
+          images_limit: 1
+        })
+        .select('plan, images_used, images_limit')
+        .single()
+
+      if (insertError) {
+        console.error('Erreur insert user:', insertError)
+      }
+      finalUser = newUser
+    }
+
+    setIsLoggedIn(true)
+    setUser({
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.user_metadata?.name || session.user.email,
+      plan: finalUser?.plan || 'free',
+      images_used: finalUser?.images_used || 0,
+      images_limit: finalUser?.images_limit || 1
+    })
+  } catch (err) {
+    console.error('loadUser crash:', err)
+    // Même en cas d'erreur, on connecte l'utilisateur avec les valeurs par défaut
+    setIsLoggedIn(true)
+    setUser({
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.user_metadata?.name || session.user.email,
+      plan: 'free',
+      images_used: 0,
+      images_limit: 1
+    })
+  }
 }
+
 
 
     supabase.auth.getSession().then(({ data: { session } }) => {
