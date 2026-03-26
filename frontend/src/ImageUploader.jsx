@@ -31,10 +31,10 @@ const [authSuccess, setAuthSuccess] = useState('')
 const handleSubscribe = async (plan) => {
   console.log('=== handleSubscribe appelé avec plan:', plan)
   console.log('=== user:', user)
-  
+
   const { data: sessionData } = await supabase.auth.getSession()
   const token = sessionData?.session?.access_token
-  
+
   console.log('=== token:', token ? 'OK' : 'MANQUANT')
 
   if (!token) {
@@ -51,11 +51,16 @@ const handleSubscribe = async (plan) => {
       },
       body: JSON.stringify({ plan, email: user.email })
     })
-    
+
     console.log('=== réponse status:', res.status)
     const data = await res.json()
     console.log('=== réponse data:', data)
-    
+
+    if (data.error) {
+      alert(data.error)
+      return
+    }
+
     if (data.url) {
       window.location.href = data.url
     } else {
@@ -66,6 +71,7 @@ const handleSubscribe = async (plan) => {
     alert('Erreur réseau: ' + err.message)
   }
 }
+
 
 ;
 
