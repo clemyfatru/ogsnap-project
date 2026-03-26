@@ -29,32 +29,31 @@ const [showForgotPassword, setShowForgotPassword] = useState(false)
 const [authSuccess, setAuthSuccess] = useState('')
 
 const handleSubscribe = async (plan) => {
-  console.log('=== handleSubscribe appelé avec plan:', plan)
-  console.log('=== user:', user)
-
   const { data: sessionData } = await supabase.auth.getSession()
   const token = sessionData?.session?.access_token
-
-  console.log('=== token:', token ? 'OK' : 'MANQUANT')
 
   if (!token) {
     alert('Vous devez être connecté')
     return
   }
 
+  const priceMap = {
+    starter: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER,
+    pro: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO,
+    agency: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY,
+  }
+
   try {
-    const res = await fetch('https://ogsnap-backend.onrender.com/api/create-checkout-session', {
+    const res = await fetch('/api/create-checkout-session', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ plan, email: user.email })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        priceId: priceMap[plan], 
+        customerEmail: user.email 
+      })
     })
 
-    console.log('=== réponse status:', res.status)
     const data = await res.json()
-    console.log('=== réponse data:', data)
 
     if (data.error) {
       alert(data.error)
@@ -67,10 +66,10 @@ const handleSubscribe = async (plan) => {
       alert('Erreur: pas de URL Stripe reçue')
     }
   } catch (err) {
-    console.error('=== Erreur fetch:', err)
     alert('Erreur réseau: ' + err.message)
   }
 }
+
 
 
 ;
