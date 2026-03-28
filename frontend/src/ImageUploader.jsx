@@ -27,11 +27,16 @@ const [authError, setAuthError] = useState('')
 const [authLoading, setAuthLoading] = useState(false)
 const [showForgotPassword, setShowForgotPassword] = useState(false)
 const [authSuccess, setAuthSuccess] = useState('')
+const [currentPlan, setCurrentPlan] = useState(null)
 
 const handleSubscribe = async (plan) => {
   const { data: sessionData } = await supabase.auth.getSession()
   const token = sessionData?.session?.access_token
 
+  if (currentPlan === plan) {
+    alert('Vous êtes déjà abonné à ce forfait.')
+    return
+  }  
   if (!token) {
     alert('Vous devez être connecté')
     return
@@ -124,6 +129,24 @@ const fonts = [
   const prices = { starter: 9, pro: 19, agency: 39 }
 
   const dropRef = useRef(null)
+
+useEffect(() => {
+  const fetchPlan = async () => {
+    const { data: sessionData } = await supabase.auth.getSession()
+    const userId = sessionData?.session?.user?.id
+    if (!userId) return
+
+    const { data } = await supabase
+      .from('subscribers')
+      .select('plan')
+      .eq('user_id', userId)
+      .single()
+
+    if (data?.plan) setCurrentPlan(data.plan)
+  }
+  fetchPlan()
+}, [])
+
 
   useEffect(() => {
     if (selectedPhoto) {
@@ -1218,12 +1241,22 @@ const downloadImage = async () => {
               </li>
             </ul>
             <p className="text-xs text-gray-400 mb-4 text-center">Idéal pour freelances, blogs</p>
-            <button
-  onClick={() => handleSubscribe('starter')}
-  className="w-full py-3 border-2 border-indigo-600 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition"
->
-  Choisir Starter
-</button>
+            {/* Bouton STARTER */}
+{currentPlan === 'starter' ? (
+  <button
+    disabled
+    className="w-full py-3 border-2 border-gray-300 text-gray-400 rounded-xl font-semibold cursor-not-allowed"
+  >
+    ✓ Forfait actuel
+  </button>
+) : (
+  <button
+    onClick={() => handleSubscribe('starter')}
+    className="w-full py-3 border-2 border-indigo-600 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition"
+  >
+    Choisir Starter
+  </button>
+)}
 
           </div>
 
@@ -1265,12 +1298,22 @@ const downloadImage = async () => {
               </li>
             </ul>
             <p className="text-xs text-gray-400 mb-4 text-center">Parfait pour startups, PME</p>
-            <button
-  onClick={() => handleSubscribe('pro')}
-  className="w-full py-3 border-2 border-indigo-600 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition"
->
-  Choisir Pro
-</button>
+            {/* Bouton PRO */}
+{currentPlan === 'pro' ? (
+  <button
+    disabled
+    className="w-full py-3 border-2 border-gray-300 text-gray-400 rounded-xl font-semibold cursor-not-allowed"
+  >
+    ✓ Forfait actuel
+  </button>
+) : (
+  <button
+    onClick={() => handleSubscribe('pro')}
+    className="w-full py-3 border-2 border-indigo-600 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition"
+  >
+    Choisir Pro
+  </button>
+)}
 
           </div>
 
@@ -1303,12 +1346,22 @@ const downloadImage = async () => {
               </li>
             </ul>
             <p className="text-xs text-gray-400 mb-4 text-center">Pour agences et grandes équipes</p>
-           <button
-  onClick={() => handleSubscribe('agency')}
-  className="w-full py-3 border-2 border-indigo-600 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition"
->
-  Choisir Agency
-</button>
+           {/* Bouton AGENCY */}
+{currentPlan === 'agency' ? (
+  <button
+    disabled
+    className="w-full py-3 border-2 border-gray-300 text-gray-400 rounded-xl font-semibold cursor-not-allowed"
+  >
+    ✓ Forfait actuel
+  </button>
+) : (
+  <button
+    onClick={() => handleSubscribe('agency')}
+    className="w-full py-3 border-2 border-indigo-600 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition"
+  >
+    Choisir Agency
+  </button>
+)}
 
           </div>
 
