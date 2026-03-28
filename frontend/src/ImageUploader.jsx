@@ -30,15 +30,21 @@ const [authSuccess, setAuthSuccess] = useState('')
 const [currentPlan, setCurrentPlan] = useState(null)
 
 const handleSubscribe = async (plan) => {
+  if (!user || !user.email) {
+    alert('Vous devez être connecté')
+    return
+  }
+
   const { data: sessionData } = await supabase.auth.getSession()
   const token = sessionData?.session?.access_token
 
-  if (currentPlan === plan) {
-    alert('Vous êtes déjà abonné à ce forfait.')
-    return
-  }  
   if (!token) {
     alert('Vous devez être connecté')
+    return
+  }
+
+  if (currentPlan === plan) {
+    alert('Vous êtes déjà abonné à ce forfait.')
     return
   }
 
@@ -52,18 +58,24 @@ const handleSubscribe = async (plan) => {
     const res = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        priceId: priceMap[plan], 
-        customerEmail: user.email 
+      body: JSON.stringify({
+        priceId: priceMap[plan],
+        customerEmail: user.email
       })
     })
 
-    const data = await res.json()
-
-    if (data.error) {
-      alert(data.error)
+    if (!res.ok) {
+      const text = await res.text()
+      try {
+        const err = JSON.parse(text)
+        alert(err.error || 'Erreur serveur')
+      } catch {
+        alert('Erreur serveur: ' + text)
+      }
       return
     }
+
+    const data = await res.json()
 
     if (data.url) {
       window.location.href = data.url
@@ -74,6 +86,7 @@ const handleSubscribe = async (plan) => {
     alert('Erreur réseau: ' + err.message)
   }
 }
+
 
 
 
