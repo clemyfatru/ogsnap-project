@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Success from './pages/Success'
 import ResetPassword from './pages/ResetPassword'
+import Pricing from './pages/Pricing'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -25,63 +26,60 @@ function App() {
     }
 
     async function loadUser(session) {
-  try {
-    const { data: dbUser, error: selectError } = await supabase
-      .from('users')
-      .select('plan, images_used, images_limit')
-      .eq('id', session.user.id)  // ← utilise id au lieu de email
-      .maybeSingle()              // ← maybeSingle au lieu de single (évite l'erreur 406)
+      try {
+        const { data: dbUser, error: selectError } = await supabase
+          .from('users')
+          .select('plan, images_used, images_limit')
+          .eq('id', session.user.id)
+          .maybeSingle()
 
-    if (selectError) {
-      console.error('Erreur select user:', selectError)
-    }
+        if (selectError) {
+          console.error('Erreur select user:', selectError)
+        }
 
-    let finalUser = dbUser
+        let finalUser = dbUser
 
-    if (!dbUser) {
-      const { data: newUser, error: insertError } = await supabase
-        .from('users')
-        .upsert({                  // ← upsert au lieu de insert (évite les doublons)
+        if (!dbUser) {
+          const { data: newUser, error: insertError } = await supabase
+            .from('users')
+            .upsert({
+              id: session.user.id,
+              email: session.user.email,
+              plan: 'free',
+              images_used: 0,
+              images_limit: 1
+            })
+            .select('plan, images_used, images_limit')
+            .single()
+
+          if (insertError) {
+            console.error('Erreur insert user:', insertError)
+          }
+          finalUser = newUser
+        }
+
+        setIsLoggedIn(true)
+        setUser({
           id: session.user.id,
           email: session.user.email,
+          name: session.user.user_metadata?.name || session.user.email,
+          plan: finalUser?.plan || 'free',
+          images_used: finalUser?.images_used || 0,
+          images_limit: finalUser?.images_limit || 1
+        })
+      } catch (err) {
+        console.error('loadUser crash:', err)
+        setIsLoggedIn(true)
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.name || session.user.email,
           plan: 'free',
           images_used: 0,
           images_limit: 1
         })
-        .select('plan, images_used, images_limit')
-        .single()
-
-      if (insertError) {
-        console.error('Erreur insert user:', insertError)
       }
-      finalUser = newUser
     }
-
-    setIsLoggedIn(true)
-    setUser({
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.user_metadata?.name || session.user.email,
-      plan: finalUser?.plan || 'free',
-      images_used: finalUser?.images_used || 0,
-      images_limit: finalUser?.images_limit || 1
-    })
-  } catch (err) {
-    console.error('loadUser crash:', err)
-    // Même en cas d'erreur, on connecte l'utilisateur avec les valeurs par défaut
-    setIsLoggedIn(true)
-    setUser({
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.user_metadata?.name || session.user.email,
-      plan: 'free',
-      images_used: 0,
-      images_limit: 1
-    })
-  }
-}
-
-
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) loadUser(session)
@@ -107,8 +105,6 @@ function App() {
   function handleLoginSuccess() {
     setCurrentPage('home')
   }
-
-
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -140,7 +136,10 @@ function App() {
         <Login onLoginSuccess={handleLoginSuccess} />
       )}
       {currentPage === 'dashboard' && (
-        <Dashboard user={user} onLogout={handleLogout} />
+        <Dashboard user={user} onLogout={handleLogout} setCurrentPage={setCurrentPage} />
+      )}
+      {currentPage === 'pricing' && (
+        <Pricing user={user} />
       )}
       {currentPage === 'success' && <Success />}
       {currentPage === 'reset-password' && <ResetPassword />}

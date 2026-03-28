@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-function Dashboard({ user, onLogout }) {
+
+function Dashboard({ user, onLogout, setCurrentPage }) {
+
   const [showChangePassword, setShowChangePassword] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -104,12 +106,13 @@ function Dashboard({ user, onLogout }) {
             <p className="text-indigo-100 text-sm mb-4">
               Passez à un forfait supérieur pour débloquer plus de templates et d'images.
             </p>
-            <button
-              onClick={() => {}}
-              className="bg-white text-indigo-600 font-semibold px-6 py-2.5 rounded-xl hover:bg-indigo-50 transition shadow-sm"
-            >
-              Voir les forfaits
-            </button>
+        <button
+  onClick={() => setCurrentPage('pricing')}
+  className="bg-white text-indigo-600 font-semibold px-6 py-2.5 rounded-xl hover:bg-indigo-50 transition shadow-sm"
+>
+  Voir les forfaits
+</button>
+
           </div>
         )}
 
