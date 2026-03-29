@@ -54,24 +54,28 @@ const handleSubscribe = async (plan) => {
     agency: process.env.NEXT_PUBLIC_STRIPE_PRICE_AGENCY,
   }
 
+  console.log('Plan:', plan)
+  console.log('PriceId:', priceMap[plan])
+  console.log('Email:', user.email)
+
+  if (!priceMap[plan]) {
+    alert('Erreur: priceId manquant pour le plan ' + plan)
+    return
+  }
+
   try {
     const res = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        priceId: priceMap[plan],
-        customerEmail: user.email
+      body: JSON.stringify({ 
+        priceId: priceMap[plan], 
+        customerEmail: user.email 
       })
     })
 
     if (!res.ok) {
       const text = await res.text()
-      try {
-        const err = JSON.parse(text)
-        alert(err.error || 'Erreur serveur')
-      } catch {
-        alert('Erreur serveur: ' + text)
-      }
+      alert('Erreur serveur: ' + text)
       return
     }
 
@@ -86,6 +90,7 @@ const handleSubscribe = async (plan) => {
     alert('Erreur réseau: ' + err.message)
   }
 }
+
 
 
 
